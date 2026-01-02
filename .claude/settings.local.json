@@ -4,7 +4,11 @@
       "Bash(cat:*)",
       "Bash(pkill:*)",
       "Bash(npm run server:dev:*)",
-      "Bash(npm run expo:dev:*)"
+      "Bash(npm run expo:dev:*)",
+      "Bash(npx eas-cli:*)",
+      "Bash(java -version:*)",
+      "Bash(echo:*)",
+      "Bash(adb:*)"
     ]
   }
 }
