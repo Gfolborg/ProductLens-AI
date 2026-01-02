@@ -12,8 +12,8 @@ export function getApiUrl(): string {
   }
 
   // Handle domain with or without port
-  // In dev mode: EXPO_PUBLIC_DOMAIN = "domain.replit.dev:5000"
-  // In production: EXPO_PUBLIC_DOMAIN = "domain.replit.dev"  
+  // Always strip port suffix as mobile devices on external networks 
+  // cannot reach non-standard ports. The API must be accessible on standard HTTPS (443).
   let urlString = host;
   
   // Normalize: ensure https:// prefix
@@ -23,9 +23,8 @@ export function getApiUrl(): string {
   
   const url = new URL(urlString);
   
-  // Use the full host (hostname + port if present)
-  // This ensures port 5000 is preserved for API calls
-  return `${url.protocol}//${url.host}/`;
+  // Use only hostname (strip port) - API must be on standard HTTPS port
+  return `https://${url.hostname}/`;
 }
 
 async function throwIfResNotOk(res: Response) {
