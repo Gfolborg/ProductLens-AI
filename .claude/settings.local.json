@@ -8,11 +8,7 @@
       "Bash(npx eas-cli:*)",
       "Bash(java -version:*)",
       "Bash(echo:*)",
-      "Bash(adb:*)",
-      "Bash(git remote:*)",
-      "Bash(git push:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(adb:*)"
     ]
   }
 }
