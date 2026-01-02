@@ -57,3 +57,77 @@ assets/images/      # App icons and splash screens
 - Added Gemini 2.5 Flash Image integration for background removal
 - Created white background compliance guard with Sharp.js
 - Added save to gallery functionality with expo-media-library
+- Fixed network connectivity issue for Expo Go on Android (January 2026)
+
+## Troubleshooting: Network/Server Connectivity Issues
+
+### Problem: "Network request failed" or "Unable to connect to server" in Expo Go
+
+**Root Cause**: Mobile devices on external networks (cellular or different WiFi) cannot reach non-standard HTTPS ports. Replit exposes services on specific ports:
+- Port 5000 (Express API) → External port 5000
+- Port 8081 (Metro/Expo) → External port 80 (default HTTPS)
+
+When the mobile app tries to connect to `https://domain:5000/api/...`, many mobile networks block this because port 5000 is non-standard. Only the default HTTPS port (443/80) is reliably accessible from mobile devices.
+
+**Symptoms**:
+- API works perfectly when tested from the Replit server (curl localhost:5000)
+- API works when tested with port in URL from within Replit
+- Mobile app in Expo Go fails with "Network request failed"
+- No requests appear in Express server logs from the mobile device
+
+**Solution**: Configure Metro to proxy API requests to Express
+
+1. **Created `metro.config.js`** with a middleware that proxies `/api` requests:
+```javascript
+const { getDefaultConfig } = require("expo/metro-config");
+const { createProxyMiddleware } = require("http-proxy-middleware");
+
+const config = getDefaultConfig(__dirname);
+
+config.server = {
+  ...config.server,
+  enhanceMiddleware: (middleware) => {
+    return (req, res, next) => {
+      if (req.url.startsWith("/api")) {
+        const proxy = createProxyMiddleware({
+          target: "http://localhost:5000",
+          changeOrigin: true,
+          logLevel: "warn",
+        });
+        return proxy(req, res, next);
+      }
+      return middleware(req, res, next);
+    };
+  },
+};
+
+module.exports = config;
+```
+
+2. **Updated `client/lib/query-client.ts`** to strip the port from API URLs:
+```typescript
+// Always strip port suffix as mobile devices on external networks 
+// cannot reach non-standard ports. The API must be accessible on standard HTTPS.
+return `https://${url.hostname}/`;  // Not url.host which includes port
+```
+
+**How it works**:
+- Mobile app requests go to `https://domain/api/amazon-main` (no port)
+- Replit routes this to port 8081 (Metro) via the default HTTPS mapping
+- Metro's proxy middleware intercepts `/api` requests
+- Requests are forwarded to Express on localhost:5000
+- Response flows back through Metro to the mobile app
+
+**Key Files**:
+- `metro.config.js` - API proxy configuration
+- `client/lib/query-client.ts` - API URL construction (strips port)
+- `.replit` - Port mappings (port 8081 → external 80)
+
+**Verification**:
+```bash
+# Test API through default HTTPS (should work from mobile)
+curl https://your-domain.replit.dev/api/health
+
+# Test API directly on port 5000 (only works internally)
+curl http://localhost:5000/api/health
+```
