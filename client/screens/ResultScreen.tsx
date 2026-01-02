@@ -40,7 +40,6 @@ export default function ResultScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -59,10 +58,13 @@ export default function ResultScreen() {
     setIsSaving(true);
 
     try {
-      if (!permissionResponse?.granted) {
-        const newPermission = await requestPermission();
-        if (!newPermission.granted) {
-          if (!newPermission.canAskAgain && Platform.OS !== "web") {
+      const { status, canAskAgain } = await MediaLibrary.getPermissionsAsync(false);
+      
+      if (status !== "granted") {
+        const result = await MediaLibrary.requestPermissionsAsync(false);
+        
+        if (result.status !== "granted") {
+          if (!result.canAskAgain && Platform.OS !== "web") {
             Alert.alert(
               "Permission Required",
               "Please enable gallery access in your device settings to save photos.",
@@ -80,6 +82,11 @@ export default function ResultScreen() {
                   },
                 },
               ]
+            );
+          } else {
+            Alert.alert(
+              "Permission Denied",
+              "Gallery access is required to save photos."
             );
           }
           setIsSaving(false);
@@ -107,7 +114,14 @@ export default function ResultScreen() {
     } catch (error) {
       console.error("Failed to save image:", error);
       
-      if (Platform.OS !== "web") {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes("AUDIO permission") || errorMessage.includes("not declared in AndroidManifest")) {
+        Alert.alert(
+          "Expo Go Limitation",
+          "Saving to gallery has limited support in Expo Go. The image was processed successfully - you can take a screenshot or build a development version for full gallery access."
+        );
+      } else if (Platform.OS !== "web") {
         Alert.alert("Save Failed", "Could not save the image to your gallery. Please try again.");
       }
     } finally {
