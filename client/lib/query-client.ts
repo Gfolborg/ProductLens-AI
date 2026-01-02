@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 /**
- * Gets the base URL for the Express API server (e.g., "http://localhost:3000")
+ * Gets the base URL for the Express API server (e.g., "https://domain.replit.dev")
  * @returns {string} The API base URL
  */
 export function getApiUrl(): string {
@@ -11,9 +11,21 @@ export function getApiUrl(): string {
     throw new Error("EXPO_PUBLIC_DOMAIN is not set");
   }
 
-  let url = new URL(`https://${host}`);
-
-  return url.href;
+  // Handle domain with or without port
+  // In dev mode: EXPO_PUBLIC_DOMAIN = "domain.replit.dev:5000"
+  // In production: EXPO_PUBLIC_DOMAIN = "domain.replit.dev"  
+  let urlString = host;
+  
+  // Normalize: ensure https:// prefix
+  if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
+    urlString = `https://${urlString}`;
+  }
+  
+  const url = new URL(urlString);
+  
+  // Use the full host (hostname + port if present)
+  // This ensures port 5000 is preserved for API calls
+  return `${url.protocol}//${url.host}/`;
 }
 
 async function throwIfResNotOk(res: Response) {

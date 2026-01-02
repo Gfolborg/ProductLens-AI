@@ -60,10 +60,21 @@ export default function PreviewScreen() {
       } as unknown as Blob);
 
       const apiUrl = getApiUrl();
-      const response = await fetch(`${apiUrl}api/amazon-main`, {
-        method: "POST",
-        body: formData,
-      });
+      const endpoint = `${apiUrl}api/amazon-main`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      
+      let response: Response;
+      try {
+        response = await fetch(endpoint, {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -87,7 +98,18 @@ export default function PreviewScreen() {
       
       reader.readAsDataURL(blob);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      let errorMessage = "An unexpected error occurred";
+      
+      if (err instanceof Error) {
+        if (err.name === "AbortError") {
+          errorMessage = "Request timed out. Please try again.";
+        } else if (err.message.includes("Network request failed") || err.message.includes("TypeError")) {
+          errorMessage = "Unable to connect to server. Please check your connection and try again.";
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
       setError(errorMessage);
       
       if (Platform.OS !== "web") {
