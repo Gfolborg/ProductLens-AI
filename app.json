@@ -51,8 +51,7 @@
         "expo-media-library",
         {
           "photosPermission": "Allow Amazon Photo Editor to save edited photos to your gallery.",
-          "savePhotosPermission": "Allow Amazon Photo Editor to save edited photos to your gallery.",
-          "isAccessMediaLocationEnabled": false
+          "savePhotosPermission": "Allow Amazon Photo Editor to save edited photos to your gallery."
         }
       ]
     ],
