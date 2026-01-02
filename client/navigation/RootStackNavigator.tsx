@@ -1,33 +1,37 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import MainTabNavigator from "@/navigation/MainTabNavigator";
-import ModalScreen from "@/screens/ModalScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
+import CameraScreen from "@/screens/CameraScreen";
+import PreviewScreen from "@/screens/PreviewScreen";
+import ResultScreen from "@/screens/ResultScreen";
 
 export type RootStackParamList = {
-  Main: undefined;
-  Modal: undefined;
+  Camera: undefined;
+  Preview: { imageUri: string };
+  Result: { resultUri: string; originalUri: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
-  const screenOptions = useScreenOptions();
+  const screenOptions = useScreenOptions({ transparent: false });
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen
-        name="Main"
-        component={MainTabNavigator}
+        name="Camera"
+        component={CameraScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Modal"
-        component={ModalScreen}
-        options={{
-          presentation: "modal",
-          headerTitle: "Modal",
-        }}
+        name="Preview"
+        component={PreviewScreen}
+        options={{ headerTitle: "Preview" }}
+      />
+      <Stack.Screen
+        name="Result"
+        component={ResultScreen}
+        options={{ headerTitle: "Amazon Ready" }}
       />
     </Stack.Navigator>
   );

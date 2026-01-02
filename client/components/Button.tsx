@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { StyleSheet, Pressable, ViewStyle, StyleProp } from "react-native";
+import { StyleSheet, Pressable, ViewStyle, StyleProp, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -16,6 +16,7 @@ interface ButtonProps {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  textStyle?: StyleProp<any>;
 }
 
 const springConfig: WithSpringConfig = {
@@ -33,6 +34,7 @@ export function Button({
   children,
   style,
   disabled = false,
+  textStyle,
 }: ButtonProps) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
@@ -53,6 +55,8 @@ export function Button({
     }
   };
 
+  const isStringChild = typeof children === "string";
+
   return (
     <AnimatedPressable
       onPress={disabled ? undefined : onPress}
@@ -69,12 +73,16 @@ export function Button({
         animatedStyle,
       ]}
     >
-      <ThemedText
-        type="body"
-        style={[styles.buttonText, { color: theme.buttonText }]}
-      >
-        {children}
-      </ThemedText>
+      {isStringChild ? (
+        <ThemedText
+          type="body"
+          style={[styles.buttonText, { color: theme.buttonText }, textStyle]}
+        >
+          {children}
+        </ThemedText>
+      ) : (
+        <View style={styles.childContainer}>{children}</View>
+      )}
     </AnimatedPressable>
   );
 }
@@ -82,11 +90,16 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     height: Spacing.buttonHeight,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.sm,
     alignItems: "center",
     justifyContent: "center",
   },
   buttonText: {
     fontWeight: "600",
+  },
+  childContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
