@@ -1,0 +1,69 @@
+You are a Senior mobile app developrt. Build ONLY ONE FEATURE for an Android-first Expo React Native app + Replit backend.
+
+FEATURE NAME
+“Camera Capture → Gemini 2.5 Flash Image background replace → Amazon Main Export”
+
+NON-NEGOTIABLE: NO MOCKS
+No fake outputs. If GEMINI_API_KEY is missing, fail with a clear setup error.
+
+GOAL (ONE TASK)
+User takes ONE photo in-app, taps “Generate Amazon Main”, and receives a marketplace-ready Amazon main image:
+- Background replaced to pure white
+- Output flattened JPG 2000x2000
+- Saved to device gallery
+No other features.
+
+MODEL
+Use Gemini 2.5 Flash Image via Gemini API:
+model = "gemini-2.5-flash-image-preview" (or the current Gemini 2.5 Flash Image model name in docs)
+This model should perform the background replacement in one step.
+
+UI (ONE SCREEN)
+Title: “Amazon Main (Safe Mode)”
+- Live camera preview + “Capture”
+- Show captured image
+- “Generate Amazon Main”
+- Loading spinner
+- Show result + “Save to Gallery” (expo-media-library)
+
+BACKEND
+Use Python FastAPI on Replit.
+Endpoints:
+- GET /api/health
+- POST /api/amazon-main (multipart upload: file) -> returns image/jpeg
+
+GEMINI EDIT INSTRUCTIONS (VERY IMPORTANT)
+When calling Gemini, provide:
+1) The captured photo as input image.
+2) A strict editing prompt that:
+   - Removes the entire background/table/clutter
+   - Replaces background with EXACT pure white
+   - Preserves the product as-is (no repainting, no texture changes, no reshaping)
+   - Keeps natural shadow only if it remains neutral and realistic
+
+Use this prompt (or better):
+“Edit this product photo for an Amazon main listing image.
+- Keep the product EXACTLY the same (do not repaint, retouch, change colors, patterns, logos, labels, or shape).
+- Remove the entire background (including table/clutter) completely.
+- Place the product on a pure white background (RGB 255,255,255).
+- Keep edges clean with no halos or fringing.
+- Center the product and scale it so it fills about 85% of a square frame with safe margins.
+- Output a square image, 2000x2000, photorealistic, no text, no watermark, no borders.”
+
+OUTPUT HANDLING
+- Receive Gemini edited image bytes and return to the app as image/jpeg.
+- Also implement server-side resizing/cropping to guarantee 2000x2000 if Gemini returns a different size.
+
+STRONGLY RECOMMENDED COMPLIANCE GUARD (tiny, invisible)
+Even if Gemini outputs white, JPEG compression can introduce near-white pixels.
+Implement a post-process “white clamp”:
+- Identify background pixels that are near-white (e.g., all channels >= 250) and set them to exactly (255,255,255).
+- Do NOT touch product pixels.
+This is a compliance safety net.
+
+ACCEPTANCE CRITERIA
+1) Camera capture works on Android.
+2) Background is removed (table disappears), not “whitened edges”.
+3) Output is JPG 2000x2000, centered product, no overlays.
+4) Background is pure white. (If using clamp, verify by sampling corners = 255,255,255.)
+5) No mocks; missing key shows setup error.
