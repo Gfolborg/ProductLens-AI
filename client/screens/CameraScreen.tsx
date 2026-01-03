@@ -242,7 +242,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: Colors.light.white,
-    textShadow: "0px 1px 4px rgba(0, 0, 0, 0.5)",
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   controls: {
     position: "absolute",

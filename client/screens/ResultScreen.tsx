@@ -14,12 +14,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HeaderButton } from "@react-navigation/elements";
 import * as MediaLibrary from "expo-media-library";
-import {
-  documentDirectory,
-  writeAsStringAsync,
-  deleteAsync,
-  EncodingType,
-} from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
@@ -88,16 +83,16 @@ export default function ResultScreen() {
       }
 
       const filename = `amazon_main_${Date.now()}.jpg`;
-      const fileUri = documentDirectory + filename;
+      const fileUri = FileSystem.documentDirectory + filename;
 
       const base64Data = resultUri.split(",")[1];
-      await writeAsStringAsync(fileUri, base64Data, {
-        encoding: EncodingType.Base64,
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
       });
 
       await MediaLibrary.saveToLibraryAsync(fileUri);
 
-      await deleteAsync(fileUri, { idempotent: true });
+      await FileSystem.deleteAsync(fileUri, { idempotent: true });
 
       setSaved(true);
       
