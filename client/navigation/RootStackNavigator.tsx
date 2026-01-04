@@ -4,11 +4,15 @@ import { useScreenOptions } from "@/hooks/useScreenOptions";
 import CameraScreen from "@/screens/CameraScreen";
 import PreviewScreen from "@/screens/PreviewScreen";
 import ResultScreen from "@/screens/ResultScreen";
+import BatchSelectionScreen from "@/screens/BatchSelectionScreen";
+import BatchQueueScreen from "@/screens/BatchQueueScreen";
 
 export type RootStackParamList = {
   Camera: undefined;
   Preview: { imageUri: string };
   Result: { resultUri: string; originalUri: string };
+  BatchSelection: { imageUris: string[] };
+  BatchQueue: { imageUris: string[] };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -32,6 +36,16 @@ export default function RootStackNavigator() {
         name="Result"
         component={ResultScreen}
         options={{ headerTitle: "Amazon Ready" }}
+      />
+      <Stack.Screen
+        name="BatchSelection"
+        component={BatchSelectionScreen}
+        options={{ headerTitle: "Review Selection" }}
+      />
+      <Stack.Screen
+        name="BatchQueue"
+        component={BatchQueueScreen}
+        options={{ headerTitle: "Processing Queue" }}
       />
     </Stack.Navigator>
   );
