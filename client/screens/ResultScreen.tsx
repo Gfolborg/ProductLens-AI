@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
+  Image,
   Dimensions,
   ActivityIndicator,
   ScrollView,
@@ -17,9 +18,7 @@ import * as FileSystem from "expo-file-system/legacy";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
-import { GestureImage } from "@/components/GestureImage";
-import { ParticleSystem } from "@/components/ParticleSystem";
-import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
+import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Result">;
@@ -36,15 +35,7 @@ export default function ResultScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
-
-  // 🎉 Trigger confetti celebration on mount
-  useEffect(() => {
-    setShowConfetti(true);
-    const timer = setTimeout(() => setShowConfetti(false), 2500);
-    return () => clearTimeout(timer);
-  }, []);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -104,12 +95,9 @@ export default function ResultScreen() {
       await FileSystem.deleteAsync(fileUri, { idempotent: true });
 
       setSaved(true);
-
+      
       if (Platform.OS !== "web") {
-        Alert.alert(
-          "Success! 🎉",
-          "Your perfect Amazon photo is ready! Keep crushing it! 🔥"
-        );
+        Alert.alert("Saved", "Your Amazon-ready image has been saved to your gallery.");
       }
     } catch (error) {
       console.error("Failed to save image:", error);
@@ -135,34 +123,18 @@ export default function ResultScreen() {
       ]}
     >
       <View style={styles.imageContainer}>
-        <GestureImage
+        <Image
           source={{ uri: resultUri }}
-          width={IMAGE_SIZE}
-          height={IMAGE_SIZE}
-          borderRadius={BorderRadius.lg}
+          style={styles.image}
           resizeMode="contain"
-          minScale={1}
-          maxScale={3}
-          doubleTapScale={2}
         />
       </View>
 
       <View style={styles.specContainer}>
         <ThemedText type="small" style={styles.specText}>
-          ✨ 2000 x 2000 - JPG - White Background
+          2000 x 2000 - JPG - White Background
         </ThemedText>
       </View>
-
-      {saved && (
-        <View style={styles.successCard}>
-          <ThemedText type="h4" style={styles.successTitle}>
-            Boom! 🎉
-          </ThemedText>
-          <ThemedText type="small" style={styles.successText}>
-            Your perfect Amazon photo is in your gallery! You're crushing it! 🔥
-          </ThemedText>
-        </View>
-      )}
 
       <View style={styles.buttonContainer}>
         <Button
@@ -186,20 +158,11 @@ export default function ResultScreen() {
 
         <Button
           onPress={handleGenerateAnother}
-          variant="outline"
           style={styles.secondaryButton}
         >
-          Generate Another
+          <ThemedText style={styles.secondaryButtonText}>Generate Another</ThemedText>
         </Button>
       </View>
-
-      {/* 🎊 Confetti celebration! */}
-      {showConfetti && (
-        <ParticleSystem
-          particleCount={50}
-          duration={2500}
-        />
-      )}
     </ScrollView>
   );
 }
@@ -221,42 +184,23 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: IMAGE_SIZE,
     height: IMAGE_SIZE,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.light.backgroundCard,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.white,
     overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
-    ...Shadows.lg,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
   },
   specContainer: {
-    marginTop: Spacing.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    backgroundColor: Colors.light.backgroundCard,
-    borderRadius: BorderRadius.md,
-    alignItems: "center",
-    ...Shadows.sm,
+    marginTop: Spacing.md,
   },
   specText: {
     color: Colors.light.textSecondary,
-  },
-  successCard: {
-    marginTop: Spacing.lg,
-    padding: Spacing.lg,
-    backgroundColor: Colors.light.successLight,
-    borderRadius: BorderRadius.md,
-    borderWidth: 2,
-    borderColor: Colors.light.success,
-    alignItems: "center",
-    ...Shadows.sm,
-  },
-  successTitle: {
-    color: Colors.light.success,
-    marginBottom: Spacing.xs,
-  },
-  successText: {
-    color: Colors.light.success,
-    textAlign: "center",
   },
   buttonContainer: {
     width: "100%",
@@ -265,12 +209,16 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     width: "100%",
+    backgroundColor: Colors.light.success,
   },
   savedButton: {
-    opacity: 0.7,
+    backgroundColor: Colors.light.textSecondary,
   },
   secondaryButton: {
     width: "100%",
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: Colors.light.primary,
   },
   loadingContent: {
     flexDirection: "row",
@@ -279,6 +227,10 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.light.white,
-    fontWeight: "700",
+    fontWeight: "600",
+  },
+  secondaryButtonText: {
+    color: Colors.light.primary,
+    fontWeight: "600",
   },
 });

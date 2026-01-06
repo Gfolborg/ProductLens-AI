@@ -11,24 +11,21 @@ import { queryClient } from "@/lib/query-client";
 
 import RootStackNavigator from "@/navigation/RootStackNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { BatchQueueProvider } from "@/contexts/BatchQueueContext";
 
 export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <BatchQueueProvider>
-          <SafeAreaProvider>
-            <GestureHandlerRootView style={styles.root}>
-              <KeyboardProvider>
-                <NavigationContainer>
-                  <RootStackNavigator />
-                </NavigationContainer>
-                <StatusBar style="auto" />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </SafeAreaProvider>
-        </BatchQueueProvider>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={styles.root}>
+            <KeyboardProvider>
+              <NavigationContainer>
+                <RootStackNavigator />
+              </NavigationContainer>
+              <StatusBar style="auto" />
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
