@@ -35,6 +35,7 @@ export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isCapturing, setIsCapturing] = useState(false);
+  const [selectionMode, setSelectionMode] = useState<"single" | "batch">("single");
 
   const captureScale = useSharedValue(1);
   const captureOpacity = useSharedValue(0.3);
@@ -74,10 +75,17 @@ export default function CameraScreen() {
       mediaTypes: ["images"],
       allowsEditing: false,
       quality: 1,
+      allowsMultipleSelection: selectionMode === "batch",
+      selectionLimit: selectionMode === "batch" ? 10 : 1,
     });
 
-    if (!result.canceled && result.assets[0]) {
-      navigation.navigate("Preview", { imageUri: result.assets[0].uri });
+    if (!result.canceled) {
+      if (selectionMode === "batch" && result.assets.length > 1) {
+        const imageUris = result.assets.map((asset) => asset.uri);
+        navigation.navigate("BatchPreview", { imageUris });
+      } else if (result.assets[0]) {
+        navigation.navigate("Preview", { imageUri: result.assets[0].uri });
+      }
     }
   };
 
@@ -147,6 +155,62 @@ export default function CameraScreen() {
             <ThemedText type="h4" style={styles.headerTitle}>
               Amazon Main (Safe Mode)
             </ThemedText>
+
+            <View style={styles.segmentedControl}>
+              <Pressable
+                style={[
+                  styles.segmentButton,
+                  styles.segmentButtonLeft,
+                  selectionMode === "single" && styles.segmentButtonActive,
+                ]}
+                onPress={() => setSelectionMode("single")}
+              >
+                <Feather
+                  name="image"
+                  size={16}
+                  color={
+                    selectionMode === "single"
+                      ? Colors.light.primary
+                      : Colors.light.white
+                  }
+                />
+                <ThemedText
+                  style={[
+                    styles.segmentText,
+                    selectionMode === "single" && styles.segmentTextActive,
+                  ]}
+                >
+                  Single
+                </ThemedText>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.segmentButton,
+                  styles.segmentButtonRight,
+                  selectionMode === "batch" && styles.segmentButtonActive,
+                ]}
+                onPress={() => setSelectionMode("batch")}
+              >
+                <Feather
+                  name="layers"
+                  size={16}
+                  color={
+                    selectionMode === "batch"
+                      ? Colors.light.primary
+                      : Colors.light.white
+                  }
+                />
+                <ThemedText
+                  style={[
+                    styles.segmentText,
+                    selectionMode === "batch" && styles.segmentTextActive,
+                  ]}
+                >
+                  Batch
+                </ThemedText>
+              </Pressable>
+            </View>
           </View>
         </View>
 
@@ -245,6 +309,47 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+    marginBottom: Spacing.md,
+  },
+  segmentedControl: {
+    flexDirection: "row",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    borderRadius: BorderRadius.full,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  segmentButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.xs,
+    minWidth: 100,
+  },
+  segmentButtonLeft: {
+    borderTopLeftRadius: BorderRadius.full,
+    borderBottomLeftRadius: BorderRadius.full,
+  },
+  segmentButtonRight: {
+    borderTopRightRadius: BorderRadius.full,
+    borderBottomRightRadius: BorderRadius.full,
+  },
+  segmentButtonActive: {
+    backgroundColor: Colors.light.white,
+  },
+  segmentText: {
+    color: Colors.light.white,
+    fontSize: 14,
+    fontWeight: "600",
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  segmentTextActive: {
+    color: Colors.light.primary,
+    textShadowColor: "transparent",
   },
   controls: {
     position: "absolute",
