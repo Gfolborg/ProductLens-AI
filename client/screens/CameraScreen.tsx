@@ -70,17 +70,23 @@ export default function CameraScreen() {
     }
   };
 
-  const handlePickImage = async () => {
+  const handlePickBatchImages = async () => {
+    // Highlight the batch tab
+    setSelectionMode("batch");
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: false,
       quality: 1,
-      allowsMultipleSelection: selectionMode === "batch",
-      selectionLimit: selectionMode === "batch" ? 10 : 1,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
     });
 
+    // Reset to single mode after picker closes
+    setSelectionMode("single");
+
     if (!result.canceled) {
-      if (selectionMode === "batch" && result.assets.length > 1) {
+      if (result.assets.length > 1) {
         const imageUris = result.assets.map((asset) => asset.uri);
         navigation.navigate("BatchPreview", { imageUris });
       } else if (result.assets[0]) {
@@ -163,7 +169,6 @@ export default function CameraScreen() {
                   styles.segmentButtonLeft,
                   selectionMode === "single" && styles.segmentButtonActive,
                 ]}
-                onPress={() => setSelectionMode("single")}
               >
                 <Feather
                   name="image"
@@ -190,7 +195,7 @@ export default function CameraScreen() {
                   styles.segmentButtonRight,
                   selectionMode === "batch" && styles.segmentButtonActive,
                 ]}
-                onPress={() => setSelectionMode("batch")}
+                onPress={handlePickBatchImages}
               >
                 <Feather
                   name="layers"
@@ -220,13 +225,6 @@ export default function CameraScreen() {
             { paddingBottom: insets.bottom + Spacing.xl },
           ]}
         >
-          <Pressable
-            style={styles.galleryButton}
-            onPress={handlePickImage}
-          >
-            <Feather name="image" size={24} color={Colors.light.white} />
-          </Pressable>
-
           <Pressable onPress={handleCapture} disabled={isCapturing}>
             <Animated.View style={[styles.captureButton, captureAnimatedStyle]}>
               {isCapturing ? (
@@ -236,8 +234,6 @@ export default function CameraScreen() {
               )}
             </Animated.View>
           </Pressable>
-
-          <View style={styles.placeholderButton} />
         </View>
       </CameraView>
     </View>
@@ -357,18 +353,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: Spacing.xl,
     paddingBottom: 80,
-  },
-  galleryButton: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.full,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
   },
   captureButton: {
     width: Spacing.captureButtonSize,
@@ -384,9 +372,5 @@ const styles = StyleSheet.create({
     height: Spacing.captureButtonSize - 16,
     borderRadius: (Spacing.captureButtonSize - 16) / 2,
     backgroundColor: Colors.light.white,
-  },
-  placeholderButton: {
-    width: 48,
-    height: 48,
   },
 });
