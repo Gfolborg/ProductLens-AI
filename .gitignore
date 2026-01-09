@@ -41,3 +41,10 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Old project copies
+ProductLens/
+ProductLens AI/
+
+# Claude Code files
+.claude/

@@ -74,7 +74,7 @@ export default function BatchProcessingScreen() {
       const endpoint = `${apiUrl}api/amazon-main`;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      const timeoutId = setTimeout(() => controller.abort(), 300000);
 
       const response = await fetch(endpoint, {
         method: "POST",
